@@ -166,9 +166,22 @@ export function useStore() {
 
   const setUserName = useCallback((userName: string) => setState((s) => ({ ...s, userName })), [])
   const clearDone = useCallback(() => setState((s) => ({ ...s, tasks: s.tasks.filter((t) => !t.done) })), [])
+  /** Agrega tareas y categorías de un archivo sin borrar nada; ignora las que ya existen (mismo id) */
+  const importTasks = useCallback((categories: Category[], tasks: Task[]) => {
+    setState((s) => {
+      const catIds = new Set(s.categories.map((c) => c.id))
+      const taskIds = new Set(s.tasks.map((t) => t.id))
+      return {
+        ...s,
+        categories: [...s.categories, ...categories.filter((c) => !catIds.has(c.id))],
+        tasks: [...s.tasks, ...tasks.filter((t) => !taskIds.has(t.id)).map((t) => newTask(t))],
+      }
+    })
+  }, [])
+
   const replaceAll = useCallback((next: AppState) => setState(next), [])
 
-  return { state, addTask, updateTask, deleteTask, toggleDone, moveOverdueToToday, saveCategory, deleteCategory, setUserName, clearDone, replaceAll }
+  return { state, addTask, updateTask, deleteTask, toggleDone, moveOverdueToToday, saveCategory, deleteCategory, setUserName, clearDone, replaceAll, importTasks }
 }
 
 function toLocalKey(iso: string): string {

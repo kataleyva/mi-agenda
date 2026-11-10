@@ -201,7 +201,7 @@ textarea { resize: vertical; }
 .check:hover { background: color-mix(in srgb, var(--cat) 25%, white); color: var(--cat); transform: scale(1.1); }
 .task.done .check { background: var(--sage); border-color: var(--sage); color: #fff; }
 .task-body { flex: 1; min-width: 0; }
-.task-title { font-weight: 700; line-height: 1.35; overflow-wrap: break-word; hyphens: auto; }
+.task-title { font-weight: 700; line-height: 1.35; overflow-wrap: break-word; }
 .prio-flag { color: var(--terracotta); margin-right: 6px; font-size: .7rem; vertical-align: middle; }
 .task-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 6px; align-items: center; }
 .chip { font-size: .75rem; font-weight: 800; padding: 2px 9px; border-radius: 99px; }

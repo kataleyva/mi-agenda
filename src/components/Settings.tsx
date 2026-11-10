@@ -13,6 +13,7 @@ export function Settings({ store, onClose }: { store: Store; onClose: () => void
   const [editing, setEditing] = useState<Category | null>(null)
   const [perm, setPerm] = useState(notificationsSupported() ? Notification.permission : 'unsupported')
   const fileRef = useRef<HTMLInputElement>(null)
+  const addRef = useRef<HTMLInputElement>(null)
 
   const exportData = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
@@ -31,6 +32,19 @@ export function Settings({ store, onClose }: { store: Store; onClose: () => void
       toast('Copia restaurada ✅', 'ok')
     } catch {
       toast('Ese archivo no parece una copia de Mi Agenda.', 'info')
+    }
+  }
+
+  const addTasks = async (f: File) => {
+    try {
+      const data = JSON.parse(await f.text()) as { categories?: Category[]; tasks?: AppState['tasks'] }
+      if (!Array.isArray(data.tasks)) throw new Error()
+      const existing = new Set(state.tasks.map((t) => t.id))
+      const nuevas = data.tasks.filter((t) => t && t.id && t.title && !existing.has(t.id))
+      store.importTasks(Array.isArray(data.categories) ? data.categories : [], nuevas)
+      toast(nuevas.length ? `📥 ${nuevas.length} tareas agregadas a tu agenda` : 'Esas tareas ya estaban en tu agenda', 'ok')
+    } catch {
+      toast('No pude leer ese archivo de tareas.', 'info')
     }
   }
 
@@ -98,11 +112,13 @@ export function Settings({ store, onClose }: { store: Store; onClose: () => void
 
         <div className="field">
           <span>Tus datos</span>
-          <p className="muted">Todo se guarda en este navegador. Descarga una copia de vez en cuando por si acaso.</p>
+          <p className="muted">Todo se guarda en este navegador. <strong>Importar tareas</strong> agrega las de un archivo sin borrar nada; <strong>Restaurar copia</strong> reemplaza toda la agenda por la copia.</p>
           <div className="row wrap">
+            <button className="btn btn-primary" onClick={() => addRef.current?.click()}>Importar tareas</button>
             <button className="btn btn-soft" onClick={exportData}>Descargar copia</button>
             <button className="btn btn-soft" onClick={() => fileRef.current?.click()}>Restaurar copia</button>
             <button className="btn btn-ghost" onClick={() => { store.clearDone(); toast('Tareas completadas archivadas', 'ok') }}>Borrar completadas</button>
+            <input ref={addRef} type="file" accept="application/json,.json" hidden onChange={(e) => { if (e.target.files?.[0]) addTasks(e.target.files[0]); e.target.value = '' }} />
             <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => e.target.files?.[0] && importData(e.target.files[0])} />
           </div>
         </div>
