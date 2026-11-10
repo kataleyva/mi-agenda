@@ -14,6 +14,7 @@ export function Settings({ store, onClose }: { store: Store; onClose: () => void
   const [perm, setPerm] = useState(notificationsSupported() ? Notification.permission : 'unsupported')
   const fileRef = useRef<HTMLInputElement>(null)
   const addRef = useRef<HTMLInputElement>(null)
+  const [confirmAll, setConfirmAll] = useState(false)
 
   const exportData = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
@@ -118,9 +119,19 @@ export function Settings({ store, onClose }: { store: Store; onClose: () => void
             <button className="btn btn-soft" onClick={exportData}>Descargar copia</button>
             <button className="btn btn-soft" onClick={() => fileRef.current?.click()}>Restaurar copia</button>
             <button className="btn btn-ghost" onClick={() => { store.clearDone(); toast('Tareas completadas archivadas', 'ok') }}>Borrar completadas</button>
+            <button className="btn btn-danger" onClick={() => setConfirmAll(true)}>Borrar todas las tareas</button>
             <input ref={addRef} type="file" accept="application/json,.json" hidden onChange={(e) => { if (e.target.files?.[0]) addTasks(e.target.files[0]); e.target.value = '' }} />
             <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => e.target.files?.[0] && importData(e.target.files[0])} />
           </div>
+          {confirmAll && (
+            <div className="cat-editor">
+              <p><strong>¿Borrar las {state.tasks.length} tareas?</strong> Tus categorías, puntos y racha se conservan. Esto no se puede deshacer, así que si quieres, descarga una copia antes.</p>
+              <div className="row end">
+                <button className="btn btn-ghost" onClick={() => setConfirmAll(false)}>Cancelar</button>
+                <button className="btn btn-danger" onClick={() => { store.clearAll(); setConfirmAll(false); toast('Agenda vacía. ¡Lista para empezar de cero! 🌱', 'ok') }}>Sí, borrar todo</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Modal>
